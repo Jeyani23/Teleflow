@@ -18,9 +18,18 @@ function App() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
-  }, []);
+  const storedUser = localStorage.getItem("user");
+
+  if (storedUser && storedUser !== "undefined") {
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+    } catch (err) {
+      console.log("User parse error:", err);
+      setUser(null);
+    }
+  }
+}, []);
 
   const handleLogin = (newUser) => setUser(newUser);
 

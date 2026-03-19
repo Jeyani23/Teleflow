@@ -15,7 +15,7 @@ function NetworkAgentDashboard() {
       const token = localStorage.getItem("token");
 
       const res = await axios.get(
-        "http://localhost:5000/api/tickets/agent",
+        `${process.env.REACT_APP_API_URL}/api/tickets/agent`, // ✅ FIXED
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -32,24 +32,25 @@ function NetworkAgentDashboard() {
 
   const updateStatus = async (id, status) => {
     try {
-      console.log("🔥 FRONTEND CALL:", id, status); // ✅ DEBUG
+      console.log("🔥 Updating:", id, status);
 
       const token = localStorage.getItem("token");
 
       const res = await axios.put(
-        `http://localhost:5000/api/tickets/update/${id}`,
-        { status: status.trim() }, // ✅ FIXED
+        `${process.env.REACT_APP_API_URL}/api/tickets/update/${id}`, // ✅ FIXED
+        { status },
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         }
       );
 
-      console.log("✅ Status updated:", res.data); // ✅ DEBUG
+      console.log("✅ Status updated:", res.data);
 
       fetchTickets();
 
-      // 🔥 BONUS UI FEEDBACK
-      alert(`SMS Sent: Ticket is ${status}`);
+      alert(`Ticket status updated to ${status}`);
 
     } catch (err) {
       console.log("❌ Error updating status:", err);
@@ -63,59 +64,54 @@ function NetworkAgentDashboard() {
 
       <div style={{ marginLeft: "240px", padding: "30px", width: "100%" }}>
 
-        <h2 style={{ color: "#81A6C6" }}>Agent Dashboard</h2>
+        <h2 style={{ color: "#81A6C6" }}>Network Agent Dashboard</h2>
 
-        <div style={{ padding: "30px" }}>
-          <h2 style={{ color: "#81A6C6" }}>Network Agent Dashboard</h2>
+        {tickets.length === 0 ? (
+          <p>No tickets found</p>
+        ) : (
+          <table border="1" width="100%" cellPadding="10">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Issue</th>
+                <th>Address</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
 
-          {tickets.length === 0 ? (
-            <p>No tickets found</p>
-          ) : (
-            <table border="1" width="100%" cellPadding="10">
-              <thead>
-                <tr>
-                  <th>Customer</th>
-                  <th>Issue</th>
-                  <th>Address</th>
-                  <th>Status</th>
-                  <th>Action</th>
+            <tbody>
+              {tickets.map(ticket => (
+                <tr key={ticket._id}>
+                  
+                  <td>
+                    {ticket.customer?.name || ticket.customer?.email || "N/A"}
+                  </td>
+
+                  <td>{ticket.issue}</td>
+
+                  <td>{ticket.address}</td>
+
+                  <td>{ticket.status}</td>
+
+                  <td>
+                    <select
+                      value={ticket.status}
+                      onChange={(e) => {
+                        updateStatus(ticket._id, e.target.value);
+                      }}
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Completed">Completed</option>
+                    </select>
+                  </td>
+
                 </tr>
-              </thead>
-
-              <tbody>
-                {tickets.map(ticket => (
-                  <tr key={ticket._id}>
-                    
-                    <td>
-                      {ticket.customer?.name || ticket.customer?.email || "N/A"}
-                    </td>
-
-                    <td>{ticket.issue || "No issue provided"}</td>
-
-                    <td>{ticket.address || "N/A"}</td>
-
-                    <td>{ticket.status}</td>
-
-                    <td>
-                      <select
-                        value={ticket.status}
-                        onChange={(e) => {
-                          const newStatus = e.target.value;
-                          updateStatus(ticket._id, newStatus);
-                        }}
-                      >
-                        <option value="Pending">Pending</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Completed">Completed</option>
-                      </select>
-                    </td>
-
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+              ))}
+            </tbody>
+          </table>
+        )}
 
       </div>
     </div>

@@ -15,7 +15,7 @@ function SimAgentDashboard() {
       const token = localStorage.getItem("token");
 
       const res = await axios.get(
-        "http://localhost:5000/api/tickets/agent",
+        `${process.env.REACT_APP_API_URL}/api/tickets/agent`, // ✅ FIXED
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -35,7 +35,7 @@ function SimAgentDashboard() {
       const token = localStorage.getItem("token");
 
       await axios.put(
-        `http://localhost:5000/api/tickets/update/${id}`,
+        `${process.env.REACT_APP_API_URL}/api/tickets/update/${id}`, // ✅ FIXED
         { status },
         {
           headers: { Authorization: `Bearer ${token}` }
@@ -43,6 +43,8 @@ function SimAgentDashboard() {
       );
 
       fetchTickets();
+
+      alert(`Ticket updated to ${status}`);
 
     } catch (err) {
       console.log("Error updating status:", err);
@@ -52,67 +54,60 @@ function SimAgentDashboard() {
   return (
     <div style={{ display: "flex" }}>
     
-    <AgentSidebar />
+      <AgentSidebar />
 
-    <div style={{ marginLeft: "240px", padding: "30px", width: "100%" }}>
+      <div style={{ marginLeft: "240px", padding: "30px", width: "100%" }}>
 
-      <h2 style={{ color: "#81A6C6" }}>Agent Dashboard</h2>
+        <h2 style={{ color: "#81A6C6" }}>SIM Agent Dashboard</h2>
 
-     
-   
-    <div style={{ padding: "30px" }}>
-      <h2 style={{ color: "#81A6C6" }}>SIM Agent Dashboard</h2>
-
-      {tickets.length === 0 ? (
-        <p>No tickets found</p>
-      ) : (
-        <table border="1" width="100%" cellPadding="10">
-          <thead>
-            <tr>
-              <th>Customer</th>
-              <th>Issue</th>
-              <th>Address</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {tickets.map(ticket => (
-              <tr key={ticket._id}>
-
-                <td>
-                  {ticket.customer?.name || ticket.customer?.email || "N/A"}
-                </td>
-
-                <td>{ticket.issue || "No issue provided"}</td>
-
-                <td>{ticket.address || "N/A"}</td>
-
-                <td>{ticket.status}</td>
-
-                <td>
-                  <select
-                    value={ticket.status}
-                    onChange={(e) =>
-                      updateStatus(ticket._id, e.target.value)
-                    }
-                  >
-                    <option>Pending</option>
-                    <option>In Progress</option>
-                    <option>Completed</option>
-                  </select>
-                </td>
-
+        {tickets.length === 0 ? (
+          <p>No tickets found</p>
+        ) : (
+          <table border="1" width="100%" cellPadding="10">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Issue</th>
+                <th>Address</th>
+                <th>Status</th>
+                <th>Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            </thead>
+
+            <tbody>
+              {tickets.map(ticket => (
+                <tr key={ticket._id}>
+
+                  <td>
+                    {ticket.customer?.name || ticket.customer?.email || "N/A"}
+                  </td>
+
+                  <td>{ticket.issue}</td>
+
+                  <td>{ticket.address}</td>
+
+                  <td>{ticket.status}</td>
+
+                  <td>
+                    <select
+                      value={ticket.status}
+                      onChange={(e) =>
+                        updateStatus(ticket._id, e.target.value)
+                      }
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Completed">Completed</option>
+                    </select>
+                  </td>
+
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
-       
-    </div>
-  </div>
   );
 }
 
