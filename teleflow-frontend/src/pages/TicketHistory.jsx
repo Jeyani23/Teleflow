@@ -3,18 +3,26 @@ import axios from "axios";
 
 function TicketHistory() {
   const [tickets, setTickets] = useState([]);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     const fetchTickets = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:5000/api/tickets/customer", {
+        if (!token) {
+          setMessage("You must be logged in to view tickets");
+          return;
+        }
+
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/tickets/customer`, {
           headers: { Authorization: `Bearer ${token}` }
         });
+
         setTickets(res.data);
+
       } catch (err) {
         console.error(err);
-        alert("Failed to fetch tickets");
+        setMessage(err.response?.data?.message || "Failed to fetch tickets");
       }
     };
     fetchTickets();
@@ -23,6 +31,7 @@ function TicketHistory() {
   return (
     <div style={{ padding: "20px" }}>
       <h2>Ticket History</h2>
+      {message && <p>{message}</p>}
       {tickets.length === 0 ? (
         <p>No tickets found.</p>
       ) : (
@@ -37,7 +46,7 @@ function TicketHistory() {
             </tr>
           </thead>
           <tbody>
-            {tickets.map(ticket => (
+            {tickets.map((ticket) => (
               <tr key={ticket._id}>
                 <td>{ticket.issue}</td>
                 <td>{ticket.ticketType}</td>

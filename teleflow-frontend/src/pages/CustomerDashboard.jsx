@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Routes, Route, Link, useLocation, Navigate } from "react-router-dom";
 import Home from "./customer/Home";
 import Profile from "./customer/Profile";
-import RiseTickets from "./customer/RiseTickets";
-import TicketHistory from "./customer/TicketHistory";
+import RiseTickets from "./RiseTickets";
+import TicketHistory from "./TicketHistory";
 
 const CustomerDashboard = () => {
   const storedUser = JSON.parse(localStorage.getItem("user") || "{}");

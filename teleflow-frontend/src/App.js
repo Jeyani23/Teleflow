@@ -3,124 +3,55 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 
 import Login from "./pages/Login";
 import Register from "./pages/Registration";
-
 import CustomerDashboard from "./pages/CustomerDashboard";
+import RiseTickets from "./pages/RiseTickets";
+import TicketHistory from "./pages/TicketHistory";
+import AdminDashboard from "./pages/AdminDashboard";
 import AgentDashboard from "./pages/agent/AgentDashboard";
 import NetworkAgentDashboard from "./pages/agent/NetworkAgentDashboard";
 import BillingAgentDashboard from "./pages/agent/BillingAgentDashboard";
 import SimAgentDashboard from "./pages/agent/SimAgentDashboard";
-import AdminDashboard from "./pages/AdminDashboard";
 import CreateAgent from "./pages/CreateAgent";
 import AgentProgress from "./pages/agent/AgentProgress";
 
-const App = () => {
-
+function App() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch {
-        setUser(null);
-      }
-    }
+    if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
-  const handleLogin = (newUser) => {
-    setUser(newUser);
-  };
+  const handleLogin = (newUser) => setUser(newUser);
 
   return (
     <Router>
-
       <Routes>
-
-        {/* LOGIN */}
+        {/* Public */}
         <Route path="/" element={<Login onLogin={handleLogin} />} />
         <Route path="/register" element={<Register />} />
 
-        {/* CUSTOMER */}
-        <Route
-          path="/customer/*"
-          element={
-            user?.role === "customer"
-              ? <CustomerDashboard />
-              : <Navigate to="/" />
-          }
-        />
+        {/* Customer */}
+        <Route path="/customer/*" element={user?.role === "customer" ? <CustomerDashboard /> : <Navigate to="/" />} />
+        <Route path="/customer/raise-ticket" element={user?.role === "customer" ? <RiseTickets /> : <Navigate to="/" />} />
+        <Route path="/customer/tickets" element={user?.role === "customer" ? <TicketHistory /> : <Navigate to="/" />} />
 
-        {/* AGENT MAIN */}
-        <Route
-          path="/agent-dashboard"
-          element={
-            ["networkAgent", "billingAgent", "simAgent"].includes(user?.role)
-              ? <AgentDashboard />
-              : <Navigate to="/" />
-          }
-        />
+        {/* Agents */}
+        <Route path="/agent-dashboard" element={["networkAgent","billingAgent","simAgent"].includes(user?.role) ? <AgentDashboard /> : <Navigate to="/" />} />
+        <Route path="/agent/network" element={user?.role === "networkAgent" ? <NetworkAgentDashboard /> : <Navigate to="/" />} />
+        <Route path="/agent/billing" element={user?.role === "billingAgent" ? <BillingAgentDashboard /> : <Navigate to="/" />} />
+        <Route path="/agent/sim" element={user?.role === "simAgent" ? <SimAgentDashboard /> : <Navigate to="/" />} />
+        <Route path="/agent/progress" element={<AgentProgress />} />
 
-        {/* NETWORK AGENT */}
-        <Route
-          path="/agent/network"
-          element={
-            user?.role === "networkAgent"
-              ? <NetworkAgentDashboard />
-              : <Navigate to="/" />
-          }
-        />
+        {/* Admin */}
+        <Route path="/admin-dashboard" element={user?.role === "admin" ? <AdminDashboard /> : <Navigate to="/" />} />
+        <Route path="/create-agent" element={user?.role === "admin" ? <CreateAgent /> : <Navigate to="/" />} />
 
-        {/* BILLING AGENT */}
-        <Route
-          path="/agent/billing"
-          element={
-            user?.role === "billingAgent"
-              ? <BillingAgentDashboard />
-              : <Navigate to="/" />
-          }
-        />
-
-        {/* SIM AGENT */}
-        <Route
-          path="/agent/sim"
-          element={
-            user?.role === "simAgent"
-              ? <SimAgentDashboard />
-              : <Navigate to="/" />
-          }
-        />
-
-
-<Route path="/agent/progress" element={<AgentProgress />} />
-
-        {/* ADMIN */}
-        <Route
-          path="/admin-dashboard"
-          element={
-            user?.role === "admin"
-              ? <AdminDashboard />
-              : <Navigate to="/" />
-          }
-        />
-
-        <Route
-          path="/create-agent"
-          element={
-            user?.role === "admin"
-              ? <CreateAgent />
-              : <Navigate to="/" />
-          }
-        />
-
-        {/* DEFAULT */}
+        {/* Default */}
         <Route path="*" element={<Navigate to="/" />} />
-
       </Routes>
-
     </Router>
   );
-};
+}
 
 export default App;

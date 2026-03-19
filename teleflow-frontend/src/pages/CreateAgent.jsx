@@ -3,154 +3,150 @@ import axios from "axios";
 
 function CreateAgent() {
 
-const [form, setForm] = useState({
-name: "",
-email: "",
-password: "",
-role: "networkAgent"
-});
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "networkAgent"
+  });
 
-const [message, setMessage] = useState("");
+  const [message, setMessage] = useState("");
 
-const handleChange = (e) => {
-setForm({ ...form, [e.target.name]: e.target.value });
-};
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  try {
+    try {
+      const token = localStorage.getItem("token");
 
-    const token = localStorage.getItem("token");
-
-    await axios.post(
-      "http://localhost:5000/api/admin/create-agent",
-      form,   // ✅ send the form object
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+      if (!token) {
+        setMessage("Please login again");
+        return;
       }
-    );
 
-    setMessage("Agent created successfully");
+      const res = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/admin/create-agent`,
+        form,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    setForm({
-      name: "",
-      email: "",
-      password: "",
-      role: "networkAgent"
-    });
+      setMessage(res.data.message || "Agent created successfully");
 
-  } catch (err) {
+      // Reset form
+      setForm({
+        name: "",
+        email: "",
+        password: "",
+        role: "networkAgent"
+      });
 
-    console.log(err.response?.data);
-    setMessage("Agent creation failed");
+    } catch (err) {
+      console.error("ERROR:", err.response?.data || err.message);
+      setMessage(err.response?.data?.message || "Agent creation failed");
+    }
+  };
 
-  }
-};
+  return (
+    <div style={{ display: "flex", justifyContent: "center", marginTop: "60px" }}>
+      <div
+        style={{
+          width: "420px",
+          padding: "30px",
+          background: "#F3E3D0",
+          borderRadius: "10px",
+          boxShadow: "0 5px 15px rgba(0,0,0,0.2)"
+        }}
+      >
 
-return(
+        <h2 style={{ textAlign: "center", color: "#81A6C6" }}>
+          Create Agent
+        </h2>
 
-<div style={{display:"flex",justifyContent:"center",marginTop:"60px"}}>
+        <form onSubmit={handleSubmit}>
 
-<div
-style={{
-width:"420px",
-padding:"30px",
-background:"#F3E3D0",
-borderRadius:"10px",
-boxShadow:"0 5px 15px rgba(0,0,0,0.2)"
-}}
->
+          <input
+            type="text"
+            name="name"
+            placeholder="Agent Name"
+            value={form.name}
+            onChange={handleChange}
+            required
+            style={inputStyle}
+          />
 
-<h2 style={{textAlign:"center",color:"#81A6C6"}}>
-Create Agent
-</h2>
+          <input
+            type="email"
+            name="email"
+            placeholder="Agent Email"
+            value={form.email}
+            onChange={handleChange}
+            required
+            style={inputStyle}
+          />
 
-<form onSubmit={handleSubmit}>
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={handleChange}
+            required
+            style={inputStyle}
+          />
 
-<input
-type="text"
-name="name"
-placeholder="Agent Name"
-value={form.name}
-onChange={handleChange}
-required
-style={inputStyle}
-/>
+          <select
+            name="role"
+            value={form.role}
+            onChange={handleChange}
+            style={inputStyle}
+          >
+            <option value="networkAgent">Network Agent</option>
+            <option value="billingAgent">Billing Agent</option>
+            <option value="simAgent">SIM Agent</option>
+          </select>
 
-<input
-type="email"
-name="email"
-placeholder="Agent Email"
-value={form.email}
-onChange={handleChange}
-required
-style={inputStyle}
-/>
+          <button type="submit" style={buttonStyle}>
+            Create Agent
+          </button>
 
-<input
-type="password"
-name="password"
-placeholder="Password"
-value={form.password}
-onChange={handleChange}
-required
-style={inputStyle}
-/>
+        </form>
 
-<select
-name="role"
-value={form.role}
-onChange={handleChange}
-style={inputStyle}
->
+        {message && (
+          <p style={{ textAlign: "center", marginTop: "15px", color: "#333" }}>
+            {message}
+          </p>
+        )}
 
-<option value="networkAgent">Network Agent</option>
-<option value="billingAgent">Billing Agent</option>
-<option value="simAgent">SIM Agent</option>
-
-</select>
-
-<button type="submit" style={buttonStyle}>
-Create Agent
-</button>
-
-</form>
-
-{message && (
-<p style={{textAlign:"center",marginTop:"15px"}}>
-{message}
-</p>
-)}
-
-</div>
-
-</div>
-
-);
-
+      </div>
+    </div>
+  );
 }
 
 const inputStyle = {
-width:"100%",
-padding:"10px",
-marginTop:"12px",
-borderRadius:"5px",
-border:"1px solid #ccc"
+  width: "100%",
+  padding: "10px",
+  marginTop: "12px",
+  borderRadius: "5px",
+  border: "1px solid #ccc"
 };
 
 const buttonStyle = {
-width:"100%",
-padding:"12px",
-marginTop:"20px",
-background:"#81A6C6",
-border:"none",
-color:"white",
-fontWeight:"bold",
-borderRadius:"5px",
-cursor:"pointer"
+  width: "100%",
+  padding: "12px",
+  marginTop: "20px",
+  background: "#81A6C6",
+  border: "none",
+  color: "white",
+  fontWeight: "bold",
+  borderRadius: "5px",
+  cursor: "pointer"
 };
 
 export default CreateAgent;
