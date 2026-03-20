@@ -1,7 +1,7 @@
 import React from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
-function AgentSidebar() {
+function AgentSidebar({ showProfile, setShowProfile }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -9,6 +9,10 @@ function AgentSidebar() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/");
+  };
+
+  const toggleProfile = () => {
+    setShowProfile(!showProfile);
   };
 
   return (
@@ -34,12 +38,23 @@ function AgentSidebar() {
             display: "flex",
             flexDirection: "column",
             gap: "15px",
-            maxHeight: "calc(100vh - 150px)", // leaves space for footer
+            maxHeight: "calc(100vh - 150px)",
             overflowY: "auto",
           }}
         >
-          <Link
-            to="/agent/dashboard"
+          <button
+            onClick={toggleProfile}
+            style={{
+              ...linkStyle,
+              background: showProfile ? "#F3E3D0" : "#81A6C6",
+              color: showProfile ? "#000" : "#fff",
+            }}
+          >
+            {showProfile ? "Close Profile" : "Profile"}
+          </button>
+
+          <button
+            onClick={() => navigate("/agent/dashboard")}
             style={{
               ...linkStyle,
               background:
@@ -51,9 +66,10 @@ function AgentSidebar() {
             }}
           >
             Dashboard
-          </Link>
-          <Link
-            to="/agent/progress"
+          </button>
+
+          <button
+            onClick={() => navigate("/agent/progress")}
             style={{
               ...linkStyle,
               background:
@@ -65,21 +81,9 @@ function AgentSidebar() {
             }}
           >
             Progress
-          </Link>
+          </button>
 
-          {/* Logout button below Progress */}
-          <button
-            onClick={handleLogout}
-            style={{
-             ...linkStyle,
-              background:
-                location.pathname === "/agent/progress"
-                  ? "#F3E3D0"
-                  : "#81A6C6",
-              color:
-                location.pathname === "/agent/progress" ? "#000" : "#fff",
-            }}
-          >
+          <button onClick={handleLogout} style={{ ...linkStyle, background: "#81A6C6", color: "#fff" }}>
             Logout
           </button>
         </div>
@@ -102,6 +106,7 @@ const linkStyle = {
   textAlign: "center",
   transition: "0.3s",
   textTransform: "uppercase",
+  cursor: "pointer",
 };
 
 export default AgentSidebar;

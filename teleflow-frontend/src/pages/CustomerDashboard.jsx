@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Routes, Route, Link, useLocation, Navigate } from "react-router-dom";
+import React, { useState } from "react";
+import { Routes, Route, Link, useLocation, useNavigate, Navigate } from "react-router-dom";
 import Home from "./customer/Home";
 import Profile from "./customer/Profile";
 import RiseTickets from "./RiseTickets";
@@ -10,10 +10,17 @@ const CustomerDashboard = () => {
   const [user, setUser] = useState(storedUser);
   const [collapsed, setCollapsed] = useState(false); // Sidebar toggle
   const location = useLocation(); // For active link
+  const navigate = useNavigate(); // For redirect
 
   if (!user?.role || user.role !== "customer") {
     return <Navigate to="/" />; // Redirect if not logged in
   }
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    navigate("/"); // redirect to login
+  };
 
   const menuItems = [
     { name: "Home", path: "home" },
@@ -74,6 +81,22 @@ const CustomerDashboard = () => {
             {!collapsed ? item.name : item.name.charAt(0)}
           </Link>
         ))}
+
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          style={{
+            marginTop: "auto",
+            backgroundColor: "#81A6C6",
+            color: "#fff",
+            border: "none",
+            padding: "0.5rem 1rem",
+            cursor: "pointer",
+            borderRadius: "6px",
+          }}
+        >
+          {!collapsed ? "Logout" : "⏻"}
+        </button>
       </div>
 
       {/* Main Content */}
