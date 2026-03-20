@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import AgentSidebar from "../../components/AgentSidebar";
+import Footer from "../../components/Footer";
 
 function SimAgentDashboard() {
-
   const [tickets, setTickets] = useState([]);
 
   useEffect(() => {
@@ -15,16 +15,11 @@ function SimAgentDashboard() {
       const token = localStorage.getItem("token");
 
       const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/tickets/agent`, // ✅ FIXED
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        `${process.env.REACT_APP_API_URL}/api/tickets/agent`,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      console.log("Fetched tickets:", res.data);
-
       setTickets(res.data);
-
     } catch (err) {
       console.log("Error fetching tickets:", err);
     }
@@ -35,29 +30,31 @@ function SimAgentDashboard() {
       const token = localStorage.getItem("token");
 
       await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/tickets/update/${id}`, // ✅ FIXED
+        `${process.env.REACT_APP_API_URL}/api/tickets/update/${id}`,
         { status },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       fetchTickets();
-
-      alert(`Ticket updated to ${status}`);
-
+      alert(`Ticket status updated to ${status}`);
     } catch (err) {
       console.log("Error updating status:", err);
     }
   };
 
   return (
-    <div style={{ display: "flex" }}>
-    
+    <div style={{ display: "flex", minHeight: "100vh" }}>
       <AgentSidebar />
 
-      <div style={{ marginLeft: "240px", padding: "30px", width: "100%" }}>
-
+      <div
+        style={{
+          marginLeft: "240px",
+          padding: "30px",
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
         <h2 style={{ color: "#81A6C6" }}>SIM Agent Dashboard</h2>
 
         {tickets.length === 0 ? (
@@ -73,39 +70,32 @@ function SimAgentDashboard() {
                 <th>Action</th>
               </tr>
             </thead>
-
             <tbody>
-              {tickets.map(ticket => (
+              {tickets.map((ticket) => (
                 <tr key={ticket._id}>
-
-                  <td>
-                    {ticket.customer?.name || ticket.customer?.email || "N/A"}
-                  </td>
-
+                  <td>{ticket.customer?.name || ticket.customer?.email || "N/A"}</td>
                   <td>{ticket.issue}</td>
-
                   <td>{ticket.address}</td>
-
                   <td>{ticket.status}</td>
-
                   <td>
                     <select
                       value={ticket.status}
-                      onChange={(e) =>
-                        updateStatus(ticket._id, e.target.value)
-                      }
+                      onChange={(e) => updateStatus(ticket._id, e.target.value)}
                     >
                       <option value="Pending">Pending</option>
                       <option value="In Progress">In Progress</option>
                       <option value="Completed">Completed</option>
                     </select>
                   </td>
-
                 </tr>
               ))}
             </tbody>
           </table>
         )}
+
+        <div style={{ marginTop: "auto" }}>
+          <Footer />
+        </div>
       </div>
     </div>
   );
