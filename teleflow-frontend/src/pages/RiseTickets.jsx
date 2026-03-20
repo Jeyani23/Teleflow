@@ -11,14 +11,22 @@ function RiseTickets() {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      if (!token) {
+      const user = JSON.parse(localStorage.getItem("user")); // Get user info
+
+      if (!token || !user) {
         setMessage("Please login first.");
         return;
       }
 
+      // Add the customer ID to the ticket data
+      const ticketData = {
+        ...form,
+        customer: user._id 
+      };
+
       await axios.post(
         `${process.env.REACT_APP_API_URL}/api/tickets`,
-        form,
+        ticketData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -26,7 +34,6 @@ function RiseTickets() {
       setForm({ ticketType: "", issue: "", address: "" });
 
     } catch (err) {
-      console.error(err);
       setMessage(err.response?.data?.message || "Failed to raise ticket");
     }
   };
@@ -35,18 +42,18 @@ function RiseTickets() {
     <div style={{ display: "flex", justifyContent: "center", marginTop: "60px" }}>
       <div style={{ width: "420px", padding: "30px", background: "#F3E3D0", borderRadius: "10px" }}>
         <h2 style={{ textAlign: "center", color: "#81A6C6" }}>Raise Ticket</h2>
-        <form onSubmit={handleSubmit}>
-          <select name="ticketType" value={form.ticketType} onChange={handleChange} required>
+        <form onSubmit={handleSubmit} style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
+          <select name="ticketType" value={form.ticketType} onChange={handleChange} required style={{padding:"10px"}}>
             <option value="">Select Issue</option>
             <option value="network">Network Issue</option>
             <option value="billing">Billing Issue</option>
             <option value="sim">SIM Issue</option>
           </select>
-          <textarea name="issue" placeholder="Describe issue" value={form.issue} onChange={handleChange} required />
-          <input type="text" name="address" placeholder="Address" value={form.address} onChange={handleChange} required />
-          <button type="submit">Submit</button>
+          <textarea name="issue" placeholder="Describe issue" value={form.issue} onChange={handleChange} required style={{padding:"10px", height:"100px"}} />
+          <input type="text" name="address" placeholder="Address" value={form.address} onChange={handleChange} required style={{padding:"10px"}} />
+          <button type="submit" style={{background:"#81A6C6", color:"white", border:"none", padding:"10px", cursor:"pointer"}}>Submit</button>
         </form>
-        {message && <p>{message}</p>}
+        {message && <p style={{textAlign:"center", marginTop:"10px"}}>{message}</p>}
       </div>
     </div>
   );
