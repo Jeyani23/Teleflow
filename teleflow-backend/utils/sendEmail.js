@@ -1,30 +1,28 @@
-const nodemailer = require('nodemailer');
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
 
-const sendEmail = async (req, res) => {
-  const { name, email, message } = req.body;
+dotenv.config();
 
-  // 1. Create a transporter
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER, 
-      pass: process.env.EMAIL_PASS, // Use an App Password, not your login password
-    },
-  });
-
-  // 2. Define email options
-  const mailOptions = {
-    from: email,
-    to: process.env.EMAIL_USER,
-    subject: `New Message from ${name}`,
-    text: message,
-  };
-
-  // 3. Send it
+export const sendEmail = async (to, subject, text) => {
   try {
-    await transporter.sendMail(mailOptions);
-    res.status(200).json({ success: true, message: "Email Sent!" });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    const transporter = nodemailer.createTransport({
+      service: process.env.EMAIL_SERVICE,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    await transporter.sendMail({
+      from: `"Teleflow Support" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      text,
+    });
+
+    console.log(`📧 Email sent to ${to} successfully!`);
+  } catch (err) {
+    console.error("❌ Failed to send email:", err.message);
+    throw err;
   }
 };

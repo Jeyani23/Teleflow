@@ -1,41 +1,45 @@
 import Ticket from "../models/Ticket.js";
+import { sendEmail } from "../utils/sendEmail.js";
 
-// --- CREATE TICKET ---
-export const createTicket = async (req, res) => {
-  try {
-    // req.body now contains { ticketType, issue, address, customer }
-    const newTicket = new Ticket(req.body);
-    const savedTicket = await newTicket.save();
-    
-    res.status(201).json({
-      success: true,
-      message: "Ticket raised successfully!",
-      ticket: savedTicket
-    });
-  } catch (error) {
-    console.error("Create Ticket Error:", error.message);
-    res.status(400).json({ message: error.message });
-  }
-};
-
-// --- UPDATE TICKET STATUS ---
 export const updateTicketStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    
-    // .populate("customer") pulls the User's name and email from the Users collection
-    const updatedTicket = await Ticket.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true }
-    ).populate("customer", "name email"); 
 
-    if (!updatedTicket) {
-      return res.status(404).json({ message: "Ticket not found" });
+    if (!["networkAgent", "billingAgent", "simAgent"].includes(req.user.role)) {
+      return res.status(403).json({ message: "Access denied" });
     }
 
-    res.json(updatedTicket);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const ticket = await Ticket.findById(req.params.id).populate("customer", "name email");
+    if (!ticket) return res.status(404).json({ message: "Ticket not found" });
+
+    ticket.status = status;
+    await ticket.save();
+
+    let subject = "";
+    let message = "";
+
+    if (status === "In Progress") {
+      subject = "Ticket In Progress";
+      message = `Hello ${ticket.customer.name},\n\nYour ticket is now IN PROGRESS.\n\nThank you.`;
+    } else if (status === "Completed") {
+      subject = "Ticket Completed";
+      message = `Hello ${ticket.customer.name},\n\nYour ticket has been COMPLETED.\n\nThank you.`;
+    }
+
+    let emailSent = false;
+    if (subject && ticket.customer?.email) {
+      try {
+        await sendEmail(ticket.customer.email, subject, message);
+        emailSent = true;
+      } catch (err) {
+        console.log("❌ Email send failed:", err);
+      }
+    }
+
+    res.json({ message: "Status updated", emailSent, ticket });
+
+  } catch (err) {
+    console.error("❌ Update error:", err);
+    res.status(500).json({ message: "Failed to update status", error: err.message });
   }
 };

@@ -1,21 +1,17 @@
 import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
-export const verifyToken = (req, res, next) => {
+export const verifyToken = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith("Bearer "))
+    return res.status(401).json({ message: "Unauthorized" });
+
+  const token = authHeader.split(" ")[1];
   try {
-    const authHeader = req.headers["authorization"];
-    if (!authHeader) return res.status(401).json({ message: "No token provided" });
-
-    const token = authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : authHeader;
-    if (!token) return res.status(401).json({ message: "Invalid token format" });
-
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (!decoded.id || !decoded.role) return res.status(401).json({ message: "Invalid token payload" });
-
-    req.user = decoded;
+    req.user = await User.findById(decoded.id).select("-password");
     next();
-
   } catch (err) {
-    console.error("Auth Error:", err.message);
-    res.status(401).json({ message: "Unauthorized", error: err.message });
+    res.status(401).json({ message: "Invalid token" });
   }
-};  
+};

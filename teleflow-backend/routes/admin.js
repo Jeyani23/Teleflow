@@ -5,50 +5,42 @@ import { verifyToken } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-// ✅ Create Agent (ONLY ADMIN)
+// CREATE AGENT
 router.post("/create-agent", verifyToken, async (req, res) => {
   try {
-
-    // 🔐 Check if admin
+    // Only admin can create agents
     if (req.user.role !== "admin") {
-      return res.status(403).json({ message: "Access denied. Admin only." });
+      return res.status(403).json({ message: "Access denied" });
     }
 
     const { name, email, password, role } = req.body;
 
-    // ✅ Validation
     if (!name || !email || !password || !role) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const existingUser = await User.findOne({ email });
-
-    if (existingUser) {
-      return res.status(400).json({ message: "Email already exists" });
+    // Check if email already exists
+    const existing = await User.findOne({ email });
+    if (existing) {
+      return res.status(400).json({ message: "Email already registered" });
     }
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const agent = new User({
+    // Create new agent
+    const agent = await User.create({
       name,
       email,
       password: hashedPassword,
       role
     });
 
-    await agent.save();
+    res.status(201).json({ message: "Agent created successfully", agent });
 
-    res.status(201).json({
-      message: "Agent created successfully",
-      agent
-    });
-
-  } catch (error) {
-    console.log("Create Agent Error:", error);
-    res.status(500).json({
-      message: "Server error",
-      error: error.message
-    });
+  } catch (err) {
+    console.error("Agent creation failed:", err);
+    res.status(500).json({ message: "Agent creation failed", error: err.message });
   }
 });
 
